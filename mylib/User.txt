@@ -1,0 +1,2 @@
+
+Fatal error: Allowed memory size of 134217728 bytes exhausted (tried to allocate 132907000 bytes) in /volume1/web/phpMyAdmin/libraries/export/odt.php on line 204
