@@ -101,6 +101,7 @@ abstract class StatusStreamBase implements StatusStream {
                                 if (CONF.isJSONStoreEnabled()) {
                                     DataObjectFactoryUtil.clearThreadLocalMap();
                                 }
+                               
                                 JSONObject json = new JSONObject(line);
                                 JSONObjectType.Type event = JSONObjectType.determine(json);
                                 if (logger.isDebugEnabled()) {
@@ -111,7 +112,9 @@ abstract class StatusStreamBase implements StatusStream {
                                         onSender(json, listeners);
                                         break;
                                     case STATUS:
+                                    {
                                         onStatus(json, listeners);
+                                    }
                                         break;
                                     case DIRECT_MESSAGE:
                                         onDirectMessage(json, listeners);
@@ -201,6 +204,16 @@ abstract class StatusStreamBase implements StatusStream {
         }
     }
 
+    protected void handleException(final StreamListener[] listeners,RawStreamListener[] rawlisteners) throws JSONException
+    {
+    	JSONObject json = new JSONObject("");
+    	try {
+			onStatus(json, listeners);
+		} catch (TwitterException e) {
+			// TODO Auto-generated catch block
+			
+		}
+    }
     protected void onMessage(String rawString, RawStreamListener[] listeners) throws TwitterException {
         logger.warn("Unhandled event: onMessage");
     }

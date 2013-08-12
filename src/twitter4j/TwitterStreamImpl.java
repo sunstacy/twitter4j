@@ -23,7 +23,9 @@ import twitter4j.internal.http.HttpClientWrapper;
 import twitter4j.internal.http.HttpClientWrapperConfiguration;
 import twitter4j.internal.http.HttpParameter;
 import twitter4j.internal.logging.Logger;
+import twitter4j.internal.org.json.JSONObject;
 import twitter4j.internal.util.z_T4JInternalStringUtil;
+import twitter4j.json.JSONObjectType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -286,12 +288,15 @@ class TwitterStreamImpl extends TwitterBaseImpl implements TwitterStream {
     public void filter(final FilterQuery query) {
         ensureAuthorizationEnabled();
         ensureStatusStreamListenerIsSet();
+        //handle.start()
         startHandler(new TwitterStreamConsumer(statusListeners, rawStreamListeners) {
             @Override
             public StatusStream getStream() throws TwitterException {
                 return getFilterStream(query);
+                // 重写了getStream的方法
             }
         });
+        
     }
 
     /**
@@ -475,7 +480,11 @@ class TwitterStreamImpl extends TwitterBaseImpl implements TwitterStream {
                         setStatus("[Receiving stream]");
                         while (!closed) {
                             try {
-                                stream.next(this.streamListeners, this.rawStreamListeners);
+                            	/*
+                            	 * new built
+                            	 */
+                            	stream.next(this.streamListeners, this.rawStreamListeners);
+
                             } catch (IllegalStateException ise) {
                                 logger.warn(ise.getMessage());
                                 break;
@@ -556,9 +565,18 @@ class TwitterStreamImpl extends TwitterBaseImpl implements TwitterStream {
                         connected = false;
                     }
                 }
-            }
+            }//end  for while
             if (this.stream != null && connected) {
                 try {
+                	/*
+                	 * new built
+                	 */
+                	String line  = "{\"created_at\":\"Fri\",\"id\":123,\"id_str\":\"123\",\"text\":\"YOU are WORNG!.\",\"source\":\"123\",\"truncated\":false,\"in_reply_to_status_id\":null,\"in_reply_to_status_id_str\":null,\"in_reply_to_user_id\":null,\"in_reply_to_user_id_str\":null,\"in_reply_to_screen_name\":null,\"user\":{\"id\":319351645,\"id_str\":\"319351645\",\"name\":\"Briana who? \",\"screen_name\":\"Yo_daddyknows\",\"location\":\"\",\"url\":null,\"description\":null,\"protected\":false,\"followers_count\":811,\"friends_count\":735,\"listed_count\":0,\"created_at\":\"Fri Jun 17 23:58:49 +0000 2011\",\"favourites_count\":10,\"utc_offset\":-18000,\"time_zone\":\"Central Time (US & Canada)\",\"geo_enabled\":false,\"verified\":false,\"statuses_count\":34697,\"lang\":\"en\",\"contributors_enabled\":false,\"is_translator\":false,\"profile_background_color\":\"642D8B\",\"profile_background_image_url\":\"g.gif\",\"profile_background_image_url_https\":\"g.gif\",\"profile_background_tile\":true,\"profile_image_url\":\"http:l.jpeg\",\"profile_image_url_https\":\"l.jpeg\",\"profile_banner_url\":\"923\",\"profile_link_color\":\"FF0000\",\"profile_sidebar_border_color\":\"65B0DA\",\"profile_sidebar_fill_color\":\"7AC3EE\",\"profile_text_color\":\"3D1957\",\"profile_use_background_image\":true,\"default_profile\":false,\"default_profile_image\":false,\"following\":null,\"follow_request_sent\":null,\"notifications\":null},\"geo\":null,\"coordinates\":null,\"place\":null,\"contributors\":null,\"retweet_count\":0,\"entities\":{\"hashtags\":[],\"urls\":[],\"user_mentions\":[]},\"favorited\":false,\"retweeted\":false,\"filter_level\":\"medium\",\"lang\":\"en\"}";
+                	JSONObject json = new JSONObject(line);
+                	//System.out.println(line);
+                   JSONObjectType.Type event = JSONObjectType.determine(json);
+                	this.stream.onStatus(json, this.streamListeners);
+
                     this.stream.close();
                 } catch (IOException ignore) {
                 } catch (Exception e) {
@@ -574,6 +592,7 @@ class TwitterStreamImpl extends TwitterBaseImpl implements TwitterStream {
                     }
                 }
             }
+           
             for (ConnectionLifeCycleListener listener : lifeCycleListeners) {
                 try {
                     listener.onCleanUp();
@@ -581,6 +600,7 @@ class TwitterStreamImpl extends TwitterBaseImpl implements TwitterStream {
                     logger.warn(e.getMessage());
                 }
             }
+            
         }
 
         public synchronized void close() {

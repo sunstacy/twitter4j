@@ -53,7 +53,7 @@ public class ConTrackUsers {
 		
 		ArrayList<Key> keyset = new ArrayList<Key>();
 		try{
-		Statement st = conn.createStatement();
+		Statement st = handle.conn.createStatement();
 		String sql = "select * from KeySet where id between "+key_begin_id+" and " +key_end_id;
 		//System.out.println(sql);
 		ResultSet rs = st.executeQuery(sql);
@@ -92,7 +92,7 @@ public class ConTrackUsers {
 			Statement st2 = handle.conn.createStatement();
 			String sql2 = "";
 			if(i<(keyset.size()-1))
-			    sql2 = "select * from User where id between "+( begin_id + i*count) +" and "+(begin_id+count*(i+1));
+			    sql2 = "select * from User where id between "+( begin_id + i*count) +" and "+(begin_id+count*(i+1)-1);
 			else
 				sql2 = "select * from User where id between "+( begin_id + i*count) +" and "+(end_id);
 	        System.out.println(sql2);
@@ -112,6 +112,7 @@ public class ConTrackUsers {
 				System.out.println("UserItem" + e.getMessage());
 			}
 			handle.close_databasehandle();
+			
 			TrackUsers track = new TrackUsers(follow,keyset.get(i));
 				track.track(i,p);
 	}
